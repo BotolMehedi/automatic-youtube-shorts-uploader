@@ -92,8 +92,12 @@ That's it! Composer will automatically create all necessary directories.
    - Fill in app name and your email
    - Add your domain
    - Add these scopes:
-     ```https://www.googleapis.com/auth/youtube.upload```
-     ```https://www.googleapis.com/auth/youtube.readonly```
+```
+   https://www.googleapis.com/auth/youtube.upload
+   ```
+```
+   https://www.googleapis.com/auth/youtube.readonly
+   ```
 4. For **"Application type"**, select **"Web application"**
 5. Add this **Authorized redirect URI**:
    ```
@@ -221,14 +225,14 @@ Manually add to crontab:
 
 ## 🐛 Troubleshooting
 
-###📍 "No Refresh Token" Error
+📍 "No Refresh Token" Error
 
 **Solution:**
 1. Go to [Google Account Permissions](https://myaccount.google.com/permissions)
 2. Remove your app's permissions
 3. Re-authorize the channel through the dashboard
 
-###📍 Videos Not Uploading
+📍 Videos Not Uploading
 
 **Check:**
 - ✅ Channel is enabled in dashboard
@@ -237,7 +241,7 @@ Manually add to crontab:
 - ✅ Videos exist in the channel directory
 - ✅ Titles exists and is not empty
 
-###📍 Token Expired Issues
+📍 Token Expired Issues
 
 **If tokens expire too quickly:** Make sure your app is **"Published"** in Google Cloud Console
 
