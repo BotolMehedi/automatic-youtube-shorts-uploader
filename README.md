@@ -92,8 +92,8 @@ That's it! Composer will automatically create all necessary directories.
    - Fill in app name and your email
    - Add your domain
    - Add these scopes:
-     - ```https://www.googleapis.com/auth/youtube.upload```
-     - ```https://www.googleapis.com/auth/youtube.readonly```
+     ```https://www.googleapis.com/auth/youtube.upload```
+     ```https://www.googleapis.com/auth/youtube.readonly```
 4. For **"Application type"**, select **"Web application"**
 5. Add this **Authorized redirect URI**:
    ```
