@@ -1,0 +1,35 @@
+{
+    "XYZ": {
+        "name": "XYZ TV",
+        "description": "News Channel",
+        "video_directory": "videos\/xyztv\/",
+        "titles_file": "titles\/xyz_titles.json",
+        "token_file": "tokens\/xyz.json",
+        "enabled": true,
+        "upload_settings": {
+            "category_id": "26",
+            "privacy_status": "public",
+            "made_for_kids": false,
+            "description": "Dont forget to subscribe our youtube channel",
+            "tags": [
+                "fyp",
+                "reels",
+                "viral"
+            ],
+            "default_language": "en"
+        },
+        "upload_schedule": [
+            {
+                "hour": 10,
+                "minute_start": 0,
+                "minute_end": 30
+            },
+            {
+                "hour": 21,
+                "minute_start": 0,
+                "minute_end": 30
+            }
+        ],
+        "min_hours_between_uploads": 2
+    }
+}

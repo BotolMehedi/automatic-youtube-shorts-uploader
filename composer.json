@@ -1,0 +1,47 @@
+{
+    "name": "botolmehedi/automatic-youtube-shorts-uploader",
+    "description": "Automatic YouTube Shorts Uploader is a PHP tool that helps you easily manage multiple YouTube channels. It automates Shorts uploads using the YouTube Data API. Simply set your videos, channel details, and upload schedule, and the tool will automatically publish your Shorts to your channels.",
+    "type": "project",
+    "keywords": [
+        "youtube",
+        "shorts",
+        "uploader",
+        "automation",
+        "youtube-api",
+        "multi-channel",
+        "video-automation",
+        "content-management",
+        "social-media",
+        "automatic-reels-uploader",
+        "youtube-data-api"
+    ],
+    "homepage": "https://github.com/BotolMehedi/automatic-youtube-shorts-uploader",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "BotolMehedi",
+            "email": "hello@mehedi.fun",
+            "homepage": "https://mehedi.fun",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/BotolMehedi/automatic-youtube-shorts-uploader/issues",
+        "source": "https://github.com/BotolMehedi/automatic-youtube-shorts-uploader"
+    },
+    "require": {
+        "php": ">=7.4.0",
+        "google/apiclient": "^2.15",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        }
+    },
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
