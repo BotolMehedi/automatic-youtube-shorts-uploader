@@ -208,67 +208,67 @@ class AutomaticYTShortsUploader {
     }
     
     private function getVideoTitle($channel, $videoPath) {
-    if (!file_exists($channel['titles_file'])) {
-        throw new Exception('Titles file not found: ' . $channel['titles_file']);
-    }
-
-    $titlesData = json_decode(file_get_contents($channel['titles_file']), true);
-    if (!$titlesData || !isset($titlesData['type']) || !isset($titlesData['titles'])) {
-        throw new Exception('Invalid titles file structure: ' . $channel['titles_file']);
-    }
-
-    $type = $titlesData['type'];
-    $videoFileName = basename($videoPath);
-
-    if ($type === 'random') {
-        if (empty($titlesData['titles'])) {
-            throw new Exception('No titles available in random titles list');
+        if (!file_exists($channel['titles_file'])) {
+            throw new Exception('Titles file not found: ' . $channel['titles_file']);
         }
-        return $titlesData['titles'][array_rand($titlesData['titles'])];
-    } elseif ($type === 'fixed') {
-        foreach ($titlesData['titles'] as $item) {
-            if (isset($item['name']) && $item['name'] === $videoFileName) {
-                return $item['title'];
+
+        $titlesData = json_decode(file_get_contents($channel['titles_file']), true);
+        if (!$titlesData || !isset($titlesData['type']) || !isset($titlesData['titles'])) {
+            throw new Exception('Invalid titles file structure: ' . $channel['titles_file']);
+        }
+
+        $type = $titlesData['type'];
+        $videoFileName = basename($videoPath);
+
+        if ($type === 'random') {
+            if (empty($titlesData['titles'])) {
+                throw new Exception('No titles available in random titles list');
+            }
+            return $titlesData['titles'][array_rand($titlesData['titles'])];
+        } elseif ($type === 'fixed') {
+            foreach ($titlesData['titles'] as $item) {
+                if (isset($item['name']) && $item['name'] === $videoFileName) {
+                    return $item['title'];
+                }
+            }
+            throw new Exception("No matching fixed title found for video: $videoFileName");
+        } else {
+            throw new Exception('Unknown titles type: ' . $type);
+        }
+    }
+
+    private function removeUploadedVideo($videoPath, $channel) {
+        if (file_exists($videoPath)) {
+            if (unlink($videoPath)) {
+                $this->log("Deleted uploaded video: " . basename($videoPath));
+                return true;
+            } else {
+                $this->log("Failed to delete uploaded video: " . basename($videoPath));
             }
         }
-        throw new Exception("No matching fixed title found for video: $videoFileName");
-    } else {
-        throw new Exception('Unknown titles type: ' . $type);
+        return false;
     }
-}
-
-private function removeUploadedVideo($videoPath, $channel) {
-    if (file_exists($videoPath)) {
-        if (unlink($videoPath)) {
-            $this->log("Deleted uploaded video: " . basename($videoPath));
-            return true;
-        } else {
-            $this->log("Failed to delete uploaded video: " . basename($videoPath));
-        }
-    }
-    return false;
-}
 
     
     private function getNextVideo($channel) {
-    $videoDir = $channel['video_directory'];
-    if (!is_dir($videoDir)) {
-        throw new Exception("Video directory not found: $videoDir");
+        $videoDir = $channel['video_directory'];
+        if (!is_dir($videoDir)) {
+            throw new Exception("Video directory not found: $videoDir");
+        }
+        
+        $videos = glob($videoDir . '*.{mp4,mov,avi,mkv,flv,wmv,MP4,MOV,AVI}', GLOB_BRACE);
+        $videos = array_filter($videos, function($video) {
+            return !is_dir($video);
+        });
+        
+        if (empty($videos)) {
+            throw new Exception('No videos found in the directory: ' . $videoDir);
+        }
+        
+        // Select Random file
+        $randomIndex = array_rand($videos);
+        return $videos[$randomIndex];
     }
-    
-    $videos = glob($videoDir . '*.{mp4,mov,avi,mkv,flv,wmv,MP4,MOV,AVI}', GLOB_BRACE);
-    $videos = array_filter($videos, function($video) {
-        return !is_dir($video);
-    });
-    
-    if (empty($videos)) {
-        throw new Exception('No videos found in the directory: ' . $videoDir);
-    }
-    
-    // Select Random file
-    $randomIndex = array_rand($videos);
-    return $videos[$randomIndex];
-}
 
     
     
@@ -309,25 +309,25 @@ private function removeUploadedVideo($videoPath, $channel) {
             $this->log("Selected video: " . basename($videoPath), $channelId);
             
 
-$title = $this->getVideoTitle($channel, $videoPath);
-$this->log("Selected title: $title", $channelId);
+            $title = $this->getVideoTitle($channel, $videoPath);
+            $this->log("Selected title: $title", $channelId);
 
             
             // VDO Description & Tags
-            $tags = implode(' #', $channel['upload_settings']['tags']);
             $description = $channel['upload_settings']['description'];
+            $tags = $channel['upload_settings']['tags'];
 
             
             // Upload
-            $result = $this->uploadVideo($youtube, $videoPath, $title, $description, $channel, $channelId);
+            $result = $this->uploadVideo($youtube, $videoPath, $title, $description, $tags, $channel, $channelId);
             
             if ($result) {
                 $this->log("Upload successful! Video ID: " . $result->getId(), $channelId);
                 $this->log("Video URL: https://youtube.com/watch?v=" . $result->getId(), $channelId);
                 
                 
-     // Delete uploaded video
-$this->removeUploadedVideo($videoPath, $channel);
+                // Delete uploaded video
+                $this->removeUploadedVideo($videoPath, $channel);
 
                 
                 // Update last upload time
@@ -344,17 +344,39 @@ $this->removeUploadedVideo($videoPath, $channel);
         return false;
     }
     
-    private function uploadVideo($youtube, $videoPath, $title, $description, $channel, $channelId) {
+    private function uploadVideo($youtube, $videoPath, $title, $description, $tags, $channel, $channelId) {
         try {
             $video = new Google\Service\YouTube\Video();
             $videoSnippet = new Google\Service\YouTube\VideoSnippet();
             
+            // Set title
             $videoSnippet->setTitle($title);
+            
+            // Set description (must be a string, not an array)
+            if (is_array($description)) {
+                $description = implode("\n", $description);
+            }
             $videoSnippet->setDescription($description);
+            
+            // Set category
             $videoSnippet->setCategoryId($channel['upload_settings']['category_id']);
-            $videoSnippet->setTags($channel['upload_settings']['tags']);
-            $videoSnippet->setDefaultLanguage($channel['upload_settings']['default_language']);
-            $videoSnippet->setDefaultAudioLanguage($channel['upload_settings']['default_language']);
+            
+            // Set tags (must be an array of strings)
+            if (is_string($tags)) {
+                $tags = explode(',', $tags);
+                $tags = array_map('trim', $tags);
+            }
+            // Ensure tags is an array
+            if (!is_array($tags)) {
+                $tags = [];
+            }
+            $videoSnippet->setTags($tags);
+            
+            // Set languages
+            if (isset($channel['upload_settings']['default_language'])) {
+                $videoSnippet->setDefaultLanguage($channel['upload_settings']['default_language']);
+                $videoSnippet->setDefaultAudioLanguage($channel['upload_settings']['default_language']);
+            }
             
             $video->setSnippet($videoSnippet);
             
@@ -388,6 +410,9 @@ $this->removeUploadedVideo($videoPath, $channel);
                     
                 } catch (Exception $e) {
                     $retryCount++;
+                    
+                    // Log the full error for debugging
+                    $this->log("Upload error (attempt $retryCount): " . $e->getMessage(), $channelId);
                     
                     if (strpos($e->getMessage(), 'Invalid Credentials') !== false || 
                         strpos($e->getMessage(), 'unauthorized') !== false) {
